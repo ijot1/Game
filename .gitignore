@@ -23,3 +23,5 @@
 
 ### VS Code ###
 .vscode/
+.gradle/
+**/*.class
