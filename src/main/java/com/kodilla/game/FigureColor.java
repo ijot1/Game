@@ -1,7 +1,8 @@
 package com.kodilla.game;
 
 public enum FigureColor {
-    WHITE,
     BLACK,
+    WHITE,
+    BLUE,
     NONE
 }
