@@ -8,15 +8,18 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
-import static com.kodilla.othello.OthelloApp.*;
+import static com.kodilla.game.FigureColor.*;
+import static com.kodilla.othello.OthelloApp.ROWS_NUMBER;
 
 public class Game {
     public static final int BOARD_SIZE = 600;
@@ -25,24 +28,31 @@ public class Game {
 
     private Board board;
     private GridPane gridPane;
+    private Participants participants;
     private Label blackPlayerName;
     private Label whitePlayerNme;
     private Label pointsBlack;
     private Label pointsWhite;
     private TextField playerName;
     private Label colorDrawInfo;
+    private FigureColor whoseMove = BLACK;
+    private FigureColor humanColor;
+    private List<Move> acceptableMoves = new ArrayList<>();
+
 
     private Image marker = new Image("file:src/main/resources/board_pawns/marker.png");
     private Image blackPawn = new Image("file:src/main/resources/board_pawns/blackPawn.png");
     private Image whitePawn = new Image("file:src/main/resources/board_pawns/whitePawn.png");
+    private Object field;
 
     public Game(Board board, GridPane gridPane) {
         this.board = board;
         this.gridPane = gridPane;
+        this.participants = new Participants();
         blackPlayerName = new Label();
         whitePlayerNme = new Label();
-        pointsBlack = new Label();
-        pointsWhite = new Label();
+        pointsBlack = addPointsLabel(0);
+        pointsWhite = addPointsLabel(0);
         playerName = new TextField();
         colorDrawInfo = new Label("Entering your name you will draw the color");
     }
@@ -62,82 +72,169 @@ public class Game {
         gridPane.gridLinesVisibleProperty().set(true);
 
         //add labels etc.
-        blackPlayerName.setText(board.getPlayer1());
+        blackPlayerName.setText(participants.getPlayer1());
         blackPlayerName.setMaxWidth(220);
         blackPlayerName.setMaxHeight(35);
         blackPlayerName.setPadding(new Insets(3, 0, 0, 0));
         blackPlayerName.setFont(new Font("Arial", 26));
         blackPlayerName.setTextFill(Color.web("#FFF"));
-        blackPlayerName.setText(board.getPlayer1());
-        blackPlayerName.setVisible(true);
+        blackPlayerName.setText(participants.getPlayer1());
         gridPane.add(blackPlayerName, 0, 0, 4, 1);
         gridPane.setHalignment(blackPlayerName, HPos.CENTER);
 
-        whitePlayerNme.setText(board.getPlayer2());
+        whitePlayerNme.setText(participants.getPlayer2());
         whitePlayerNme.setMaxWidth(220);
         whitePlayerNme.setMaxHeight(35);
         whitePlayerNme.setPadding(new Insets(3, 5, 0, 5));
         whitePlayerNme.setFont(new Font("Arial", 26));
         whitePlayerNme.setTextFill(Color.web("#FFF"));
-        whitePlayerNme.setText(board.getPlayer2());
-        whitePlayerNme.setVisible(true);
+        whitePlayerNme.setText(participants.getPlayer2());
         gridPane.setHalignment(whitePlayerNme, HPos.CENTER);
-        gridPane.add(whitePlayerNme, 12, 0,4,1);
+        gridPane.add(whitePlayerNme, 12, 0, 4, 1);
 
-        points(pointsBlack);
-        pointsBlack.setText(String.valueOf(board.getPointsPlayer1()));
+        pointsBlack = addPointsLabel(participants.getPointsPlayer1());
         gridPane.add(pointsBlack, 5, 0, 1, 1);
-        gridPane.setHalignment(pointsBlack, HPos.CENTER);
+        gridPane.setHalignment(pointsBlack, HPos.LEFT);
 
-        points(pointsWhite);
-        pointsWhite.setText(String.valueOf(board.getPointsPlayer2()));
+        pointsWhite = addPointsLabel(participants.getPointsPlayer2());
         gridPane.add(pointsWhite, 10, 0, 1, 1);
-        GridPane.setHalignment(pointsWhite, HPos.CENTER);
+        gridPane.setHalignment(pointsWhite, HPos.RIGHT);
 
-//        colorDrawInfo = new Label("Entering your name you will draw the color");
         colorDrawInfo.setWrapText(true);
         colorDrawInfo.setTextAlignment(TextAlignment.CENTER);
         colorDrawInfo.setFont(new Font("Arial", 26));
         colorDrawInfo.setStyle("-fx-text-fill: red");
-        colorDrawInfo.setVisible(true);
-        gridPane.add(colorDrawInfo, 0, 3, 4,1);
+        gridPane.add(colorDrawInfo, 0, 3, 4, 1);
 
-//        playerName = new TextField();
         playerName.setPromptText("Enter your name");
         playerName.setFont(new Font("Arial", 26));
         playerName.setStyle("-fx-text-fill: grey");
-        playerName.setPadding(new Insets(0, 5, 0,5));
-        gridPane.add(playerName, 0,4, 4, 1 );
-        playerName.setVisible(true);
+        playerName.setPadding(new Insets(0, 5, 0, 5));
+        gridPane.add(playerName, 0, 4, 4, 1);
+
+        setInitialView();
 
         playerName.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 String name = playerName.getText();
-                int selectBlack = (int)(Math.random() * 2) + 1;
+                int selectBlack = (int) (Math.random() * 2) + 1;
                 if (selectBlack == 1) {
-                    board.setPlayer1(name);
+                    participants.setPlayer1(name);
                     blackPlayerName.setText(name);
-                    board.setPlayer2("Computer");
-                    whitePlayerNme.setText(board.getPlayer2());
+                    participants.setPlayer2("Computer");
+                    whitePlayerNme.setText(participants.getPlayer2());
+                    humanColor = BLACK;
                 } else {
-                    board.setPlayer1("Computer");
+                    participants.setPlayer1("Computer");
+                    participants.setPlayer2(name);
                     blackPlayerName.setText("Computer");
-                    board.setPlayer2(name);
                     whitePlayerNme.setText(name);
+                    humanColor = WHITE;
+                    calculateMoves();
+                    setAcceptableMoves();
+                    doComputerMove();
+                    calculatePoints();
                 }
                 colorDrawInfo.setVisible(false);
                 playerName.setVisible(false);
-                System.out.println(selectBlack);
+                showFigures();
             }
         });
 
-//        colorDrawInfo.setVisible(false);
-//        playerName.setVisible(false);
+        gridPane.setOnMouseClicked(e -> {
+            if (humanColor == whoseMove) {
+                int x = (int) e.getX() / TILE_SIZE;
+                int y = (int) (e.getY() + PADDING_TOP) / TILE_SIZE;
+                System.out.println(x + ", " + y + "; " + acceptableMoves.size());
+                if (x > 3 && x < 12 && y < 9 && y > 0 && board.getFigure(x, y).getColor() == BLUE) {
+                    board.setFigure(x, y, new Figure(humanColor));
+                    calculateMoves();
+                    setAcceptableMoves();
+                    calculatePoints();
+                    switchPlayer();
+                    doComputerMove();
+                    calculatePoints();
+                }
+            } else {
+                calculateMoves();
+                setAcceptableMoves();
+                doComputerMove();
+                calculatePoints();
+            }
+            showFigures();
+
+        });
+    }
+
+    private void setAcceptableMoves() {
+        for (int i = 0; i < acceptableMoves.size(); i++) {
+            board.setFigure(acceptableMoves.get(i).getField().getX(), acceptableMoves.get(i).getField().getY(), new Figure(BLUE));
+        }
+    }
+
+    private void calculateMoves() {
+        List<Field> delta = new ArrayList<>();
+        //NE clockwise
+        delta.add(new Field(1, -1));
+        delta.add(new Field(1, 0));
+        delta.add(new Field(1, 1));
+        delta.add(new Field(0, 1));
+        delta.add(new Field(-1, 1));
+        delta.add(new Field(-1, 0));
+        delta.add(new Field(-1, -1));
+        delta.add(new Field(0, -1));
+
+        FigureColor tempColor = whoseMove;
+        tempColor = (tempColor == WHITE) ? BLACK : WHITE;
+        Field tempField;
+
+        for (int col = 4; col < 12; col++) {
+            for (int row = 1; row < ROWS_NUMBER; row++) {
+                if (board.getFigure(col, row).getColor() == NONE) {
+                    int direction = 0;
+                    tempField = new Field(col, row);
+                    do {
+                        Field fAdd = tempField.addField(delta.get(direction));
+                        Move m = null;
+                        if (board.getFigure(fAdd.getX(), fAdd.getY()).getColor() == tempColor) {
+                            m = new Move();
+                            m.setField(tempField);
+                            m.getToScore().add(fAdd);
+                        } else if (board.getFigure(fAdd.getX(), fAdd.getY()).getColor() == whoseMove) {
+                            acceptableMoves.add(m);
+                            direction++;
+                        } else {
+                            direction++;
+                        }
+                    } while (direction < delta.size());
+                }
+            }
+        }
+    }
+
+    private void calculatePoints() {
+        int b = 0;
+        int w = 0;
         for (int col = 4; col < 12; col++) {
             for (int row = 1; row < ROWS_NUMBER; row++) {
                 Figure figure = board.getFigure(col, row);
-                //pos(col, row) -> picture(figure.getColor())
-                if (figure.getColor() == FigureColor.BLACK)
+                if (figure.getColor() == BLACK)
+                    b++;
+                else if (figure.getColor() == FigureColor.WHITE)
+                    w++;
+            }
+        }
+        participants.setPointsPlayer1(b);
+        participants.setPointsPlayer2(w);
+        pointsBlack.setText(String.valueOf(b));
+        pointsWhite.setText(String.valueOf(w));
+    }
+
+    private void showFigures() {
+        for (int col = 4; col < 12; col++) {
+            for (int row = 1; row < ROWS_NUMBER; row++) {
+                Figure figure = board.getFigure(col, row);
+                if (figure.getColor() == BLACK)
                     gridPane.add(new ImageView(blackPawn), col, row);
                 else if (figure.getColor() == FigureColor.WHITE)
                     gridPane.add(new ImageView(whitePawn), col, row);
@@ -145,25 +242,46 @@ public class Game {
                     gridPane.add(new ImageView(marker), col, row);
             }
         }
+    }
 
-        gridPane.setOnMouseClicked(e -> {
-            int x = (int) e.getX()/ TILE_SIZE;
-            int y = (int) (e.getY() + PADDING_TOP) / TILE_SIZE;
-            System.out.println(x + ", " + y);
-            if (x > 3 && x < 12 && y < 9 && y > 0) {
-                board.setFigure(x, y, new Figure(colorChoice()));
-            }
-            showBoard();
-        });
-            }
+    private void setInitialView() {
+        board.setFigure(7, 4, new Figure(WHITE));
+        board.setFigure(8, 5, new Figure(WHITE));
+        board.setFigure(7, 5, new Figure(BLACK));
+        board.setFigure(8, 4, new Figure(BLACK));
+    }
 
-    private void points(Label pointsBlack) {
-        pointsBlack.setMaxWidth(75);
-        pointsBlack.setMaxHeight(35);
-        pointsBlack.setPadding(new Insets(3, 0, 0, 0));
-        pointsBlack.setFont(new Font("Arial", 26));
-        pointsBlack.setTextFill(Color.web("#FFF"));
-        pointsBlack.setAlignment(Pos.CENTER);
+    private void switchPlayer() {
+        whoseMove = (whoseMove == FigureColor.WHITE) ? BLACK : FigureColor.WHITE;
+    }
+
+    private void doComputerMove() {
+        List<Field> computerMoves = new ArrayList<>();
+        for (int i = 4; i < 12; i++) {
+            for (int j = 1; j < 9; j++) {
+                if (board.getFigure(i, j).getColor() == BLUE) {
+                    Field field = new Field(i, j);
+                    computerMoves.add(field);
+                }
+            }
+        }
+        int random = (int) (Math.random() * computerMoves.size());
+        Field toField = computerMoves.get(random);
+        board.setFigure(toField.getX(), toField.getY(), new Figure(whoseMove));
+        showFigures();
+        switchPlayer();
+        System.out.println(computerMoves.size() + "; " + random + "; " + whoseMove);
+    }
+
+    private Label addPointsLabel(int p) {
+        Label l = new Label(String.valueOf(p));
+        l.setMaxWidth(75);
+        l.setMaxHeight(35);
+        l.setPadding(new Insets(3, 0, 0, 0));
+        l.setFont(new Font("Arial", 26));
+        l.setTextFill(Color.web("#FFF"));
+        l.setAlignment(Pos.CENTER);
+        return l;
     }
 
     public FigureColor colorChoice() {

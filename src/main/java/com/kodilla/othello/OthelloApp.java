@@ -1,22 +1,12 @@
 package com.kodilla.othello;
 
 import com.kodilla.game.Board;
-import com.kodilla.game.Figure;
-import com.kodilla.game.FigureColor;
 import com.kodilla.game.Game;
 import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 public class OthelloApp extends Application {
