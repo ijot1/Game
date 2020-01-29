@@ -41,7 +41,7 @@ public class OthelloApp extends Application {
         GridPane playingBoard = new GridPane();
         Game game = new Game(board, playingBoard);
         game.showBoard();
-
+        game.prepareButtons();
         return playingBoard;
     }
 

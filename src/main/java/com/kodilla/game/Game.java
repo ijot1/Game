@@ -94,6 +94,7 @@ public class Game {
         button2 = new Button("Submit");
         button2.setVisible(false);
         backToStart = new Button("Back to\n  start");
+        backToStart.setVisible(false);
         playAgain = new Button("Play again");
         playAgain.setVisible(false);
 
@@ -118,6 +119,7 @@ public class Game {
     }
 
     public void showBoard() {
+
         gridPane.getChildren().clear();
         gridPane.setPrefSize(BOARD_SIZE, BOARD_SIZE);
         gridPane.getRowConstraints().add(0, new RowConstraints(37));
@@ -129,7 +131,7 @@ public class Game {
         }
         gridPane.getRowConstraints().add(9, new RowConstraints(37));
 
-        gridPane.gridLinesVisibleProperty().set(true);
+        gridPane.gridLinesVisibleProperty().set(false);
 
         // Add labels etc.
         blackPlayerName.setText(participants.getPlayer1());
@@ -250,8 +252,13 @@ public class Game {
 
         setInitialView();
 
+
+    }
+
+    public void prepareButtons() {
         choiceOneOrTwoPlayers.selectedToggleProperty().addListener((ov, oldToggle, newToggle) -> {
-            String toggleMsg = ((ToggleButton) newToggle).getText();
+            ToggleButton button = (newToggle != null) ? (ToggleButton)newToggle : (ToggleButton)oldToggle;
+            String toggleMsg = button.getText();
             if (Objects.equals(toggleMsg, "One player")) {
                 players = ONE_PLAYER;
                 whoPlays.setText("Your selection:\n" + toggleMsg + " vs. computer\n SELECT LEVEL");
@@ -274,7 +281,8 @@ public class Game {
         });
 
         choiceLevel.selectedToggleProperty().addListener((ov, oldToggle, newToggle) -> {
-            String toggleMsg = ((ToggleButton) newToggle).getText();
+            ToggleButton button = (newToggle != null) ? (ToggleButton)newToggle : (ToggleButton)oldToggle;
+            String toggleMsg = button.getText();
             if (Objects.equals(toggleMsg, "Basic level")) {
                 levelChoice = false;
                 infoBasicOrHigh.setText("BASIC");
@@ -323,14 +331,23 @@ public class Game {
         });
 
         backToStart.setOnAction(event -> {
-//            startPlay();
-//            backToStart.setVisible(false);
+            backToStart.setVisible(false);
+            onePlayer.setVisible(false);
+            twoPlayers.setVisible(false);
+            basicLevel.setVisible(false);
+            highLevel.setVisible(false);
+            player1rName.setVisible(false);
+            player2rName.setVisible(false);
+            button1.setVisible(false);
+            button2.setVisible(false);
+            playAgain.setVisible(false);
+            board = new Board();
+            showBoard();
         });
 
         playAgain.setOnAction(event -> {
             playAgain.setVisible(false);
             board = new Board();
-//            gridPane = new GridPane();
             showBoard();
         });
     }
@@ -476,6 +493,7 @@ public class Game {
                 moveWhite.setVisible(false);
             });
         }
+        backToStart.setVisible(true);
     }
 
     private void flipScoredPawns(int x, int y) {
