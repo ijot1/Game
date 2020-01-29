@@ -22,7 +22,7 @@ public class OthelloApp extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         BackgroundSize backgroundSize = new BackgroundSize(100, 100, true, true, false, true);
-        BackgroundImage backgroundImage  = new BackgroundImage(imageback, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
+        BackgroundImage backgroundImage = new BackgroundImage(imageback, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
         Background background = new Background(backgroundImage);
 
         GridPane playingBoard = addPlayingBoard();
@@ -34,7 +34,7 @@ public class OthelloApp extends Application {
         primaryStage.sizeToScene();
         primaryStage.setResizable(false);
         primaryStage.show();
-    }
+}
 
     public GridPane addPlayingBoard() {
         Board board = new Board();
@@ -43,12 +43,6 @@ public class OthelloApp extends Application {
         game.showBoard();
 
         return playingBoard;
-    }
-
-    public VBox addVBoxRight() {
-        VBox vBoxRight = new VBox();
-        //
-        return vBoxRight;
     }
 
     public static void main(String[] args) {

@@ -1,5 +1,7 @@
 package com.kodilla.game;
 
+import java.util.Objects;
+
 public class Field {
     private int x;
     private int y;
@@ -9,16 +11,33 @@ public class Field {
         this.y = y;
     }
 
-        public int getX() {
-        return x;
+    public Field addField(int dx, int dy) {
+        return new Field(x + dx, y + dy);
     }
 
-    public Field addField (Field f) {
-        Field field = new Field(x += f.getX(), y += f.getY());
-        return field;
+    public int getX() {
+        return x;
     }
 
     public int getY() {
         return y;
+    }
+
+    public String toString() {
+        return "[" + x + ", " + y + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Field)) return false;
+        Field field = (Field) o;
+        return getX() == field.getX() &&
+                getY() == field.getY();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getX(), getY());
     }
 }
